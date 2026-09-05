@@ -1,0 +1,24 @@
+{
+  "name": "marttrack-2.0",
+  "version": "2.0.0",
+  "description": "Offline-first inventory and profit management app",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.72.6",
+    "@react-native-async-storage/async-storage": "1.19.3",
+    "expo": "~49.0.15",
+    "expo-status-bar": "~1.6.0",
+    "react-native-safe-area-context": "4.6.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}
