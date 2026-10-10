@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "MartTrack",
+    "slug": "marttrack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "marttrack",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#10110F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.marttrack.app"
+    },
+    "android": {
+      "package": "com.marttrack.app"
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

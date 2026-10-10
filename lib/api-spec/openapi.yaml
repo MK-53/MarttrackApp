@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: briefing
+    description: AI business briefing operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /business-briefing:
+    post:
+      operationId: createBusinessBriefing
+      tags: [briefing]
+      summary: Generate an AI business briefing
+      description: Generates a briefing using the shop owner's required BYOK provider key. The key is never persisted by the server.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusinessBriefingRequest"
+      responses:
+        "200":
+          description: Generated briefing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessBriefingResponse"
+        "400":
+          description: Invalid request or missing provider key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BriefingError"
+        "502":
+          description: Provider rejected the request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BriefingError"
+        "500":
+          description: Briefing generated but could not be persisted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BriefingError"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    BriefingProvider:
+      type: string
+      enum: [anthropic, gemini, openai]
+    SalesTrendPoint:
+      type: object
+      properties:
+        period: { type: string }
+        revenue: { type: number }
+        cogs: { type: number }
+        profit: { type: number }
+        unitsSold: { type: number }
+      required: [period, revenue, cogs, profit, unitsSold]
+    RankedItem:
+      type: object
+      properties:
+        itemId: { type: number }
+        itemName: { type: string }
+        revenue: { type: number }
+        profit: { type: number }
+        unitsSold: { type: number }
+      required: [itemId, itemName, revenue, profit, unitsSold]
+    StockHealthItem:
+      type: object
+      properties:
+        itemId: { type: number }
+        itemName: { type: string }
+        stockOnHand: { type: number }
+        daysInStock: { type: number }
+      required: [itemId, itemName, stockOnHand, daysInStock]
+    FestivalWindow:
+      type: object
+      properties:
+        name: { type: string }
+        date: { type: string }
+        leadDays: { type: number }
+        daysUntil: { type: number }
+      required: [name, date, leadDays, daysUntil]
+    SupplierRecommendation:
+      type: object
+      properties:
+        itemId: { type: number }
+        itemName: { type: string }
+        currentCost: { type: number }
+        supplier: { type: string }
+        quotedPrice: { type: number }
+        savingsPct: { type: number }
+        checkedAt: { type: string }
+      required: [itemId, itemName, currentCost, supplier, quotedPrice, savingsPct, checkedAt]
+    BusinessBriefingRequest:
+      type: object
+      properties:
+        provider:
+          $ref: "#/components/schemas/BriefingProvider"
+        userApiKey:
+          type: string
+          minLength: 1
+          description: Required BYOK key for the selected provider. Never stored by the server.
+        salesTrend:
+          type: array
+          items: { $ref: "#/components/schemas/SalesTrendPoint" }
+        topSellers:
+          type: array
+          items: { $ref: "#/components/schemas/RankedItem" }
+        slowMovers:
+          type: array
+          items: { $ref: "#/components/schemas/RankedItem" }
+        stockHealth:
+          type: array
+          items: { $ref: "#/components/schemas/StockHealthItem" }
+        upcomingFestival:
+          anyOf:
+            - $ref: "#/components/schemas/FestivalWindow"
+            - type: "null"
+        supplierRecommendations:
+          type: array
+          items: { $ref: "#/components/schemas/SupplierRecommendation" }
+      required: [provider, userApiKey, salesTrend, topSellers, slowMovers, stockHealth]
+    BusinessBriefingResponse:
+      type: object
+      properties:
+        summary: { type: string }
+        recommendations:
+          type: array
+          items: { type: string }
+      required: [summary, recommendations]
+    BriefingError:
+      type: object
+      properties:
+        error: { type: string }
+        code:
+          type: string
+          enum: [MISSING_API_KEY, PROVIDER_ERROR, INVALID_REQUEST, PERSISTENCE_ERROR]
+        issues:
+          type: array
+          items: { type: object }
+      required: [error, code]
+
