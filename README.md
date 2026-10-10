@@ -1,5 +1,7 @@
 # MartTrack
 
+Offline-first React Native (Expo) app for shop inventory & profit tracking. Built with a domain-driven architecture featuring strict FIFO inventory costing, precise COGS & ROI math without state drift, complete audit history trails, and local AsyncStorage persistence with JSON/CSV export and PIN security.
+
 Offline-first shop tracker (stock, sales, returns, profit) built with Expo / React Native.
 Data lives on the device. The optional AI Briefing feature talks to a small Express API.
 
