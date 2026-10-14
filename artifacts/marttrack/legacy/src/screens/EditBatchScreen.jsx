@@ -9,7 +9,7 @@ import ScreenHeader from "../components/ScreenHeader";
 import { validatePositive, validateRequired } from "../utils/validation";
 
 export default function EditBatchScreen({ onNavigate }) {
-  const { state, colors, dispatch } = useMartTrack();
+  const { state, colors, dispatch, isDispatching } = useMartTrack();
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [form, setForm] = useState({
     newQuantity: "",
@@ -42,7 +42,7 @@ export default function EditBatchScreen({ onNavigate }) {
   };
 
   useEffect(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || isDispatching) return;
     setSaving(false);
     if (state.lastActionError) {
       Alert.alert("Error", state.lastActionError);
@@ -51,7 +51,7 @@ export default function EditBatchScreen({ onNavigate }) {
       onNavigate("summary");
     }
     setPendingAction(null);
-  }, [pendingAction, state.lastActionError, onNavigate]);
+  }, [pendingAction, state.lastActionError, isDispatching, onNavigate]);
 
   const setField = (key, value) => {
     setForm(previous => ({ ...previous, [key]: value }));

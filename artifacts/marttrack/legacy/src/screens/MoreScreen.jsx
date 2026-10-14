@@ -2,9 +2,13 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { COLORS } from "../constants/colors";
 import ScreenHeader from "../components/ScreenHeader";
+import { useMartTrack } from "../state/MartTrackContext";
 
 export default function MoreScreen({ onNavigate }) {
+  const { isOwner, activeStore } = useMartTrack();
   const items = [
+    { label: "Store and Team", icon: "\u25A3", value: "stores", color: COLORS.primary, desc: "Switch shops, create or join a store" },
+    ...(isOwner ? [
     { label: "Business Briefing", icon: "\u2605", value: "briefing", color: COLORS.primary, desc: "Sales, stock, and seasonal signals" },
     { label: "Supplier Quotes", icon: "\u2696", value: "suppliers", color: COLORS.secondary, desc: "Compare manual supplier prices" },
     { label: "Edit Item",   icon: "\u270E", value: "edit",      color: COLORS.warning,  desc: "Update item details" },
@@ -12,6 +16,10 @@ export default function MoreScreen({ onNavigate }) {
     { label: "Returns",     icon: "\u2190", value: "return",     color: COLORS.danger,   desc: "Process a return" },
     { label: "History",     icon: "\u2261", value: "history",    color: COLORS.primary,  desc: "View activity log" },
     { label: "Settings",    icon: "\u2699", value: "settings",   color: COLORS.textBody, desc: "Backup, export, security" },
+    ] : []),
+    ...(isOwner && activeStore?.location !== "device"
+      ? [{ label: "Manage Team", icon: "\u2637", value: "store-team", color: COLORS.secondary, desc: "Roles, worker access and invitations" }]
+      : []),
   ];
 
   return (

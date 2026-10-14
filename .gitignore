@@ -56,3 +56,12 @@ Thumbs.db
 # Build output
 dist/
 *.tsbuildinfo
+
+# Local notes and leftovers from the old hosting platform
+attached_assets/
+.replit
+.replitignore
+replit.md
+.agents/
+.config/
+*.zip

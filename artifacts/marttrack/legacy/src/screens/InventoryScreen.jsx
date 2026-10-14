@@ -9,7 +9,8 @@ import FilterTabs from "../components/FilterTabs";
 import ScreenHeader from "../components/ScreenHeader";
 
 export default function InventoryScreen({ onNavigate }) {
-  const { state } = useMartTrack();
+  const { state, isOwner } = useMartTrack();
+  const canSeeOwnerData = isOwner !== false;
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [expandedItemId, setExpandedItemId] = useState(null);
@@ -41,7 +42,9 @@ export default function InventoryScreen({ onNavigate }) {
             { label: "All", value: "all" },
             { label: "Running low", value: "low" },
             { label: "Sold out", value: "out" },
+            ...(canSeeOwnerData ? [
             { label: "Making profit", value: "profit" },
+            ] : []),
           ]}
           activeTab={filter}
           onTabChange={setFilter}
@@ -59,7 +62,7 @@ export default function InventoryScreen({ onNavigate }) {
               <Text style={styles.itemSub}>
                 {item.totalStock} {item.sell_unit_type} left to sell
               </Text>
-              <Text style={styles.itemSub}>Average cost ${item.costPerUnit} · {item.soldQty} sold</Text>
+              {canSeeOwnerData && <Text style={styles.itemSub}>Average cost ${item.costPerUnit} · {item.soldQty} sold</Text>}
               <TouchableOpacity
                 testID={`check-stock-details-${item.id}`}
                 style={styles.detailsToggle}
@@ -84,25 +87,27 @@ export default function InventoryScreen({ onNavigate }) {
                       <Text style={styles.detailLabel}>Target price</Text>
                       <Text style={styles.detailValue}>${item.target_price_per_unit.toFixed(2)}</Text>
                     </View>
-                    <View style={styles.detailCell}>
-                      <Text style={styles.detailLabel}>Stock value</Text>
-                      <Text style={styles.detailValue}>${(item.totalStock * item.costPerUnit).toFixed(2)}</Text>
-                    </View>
+                    {canSeeOwnerData && (
+                      <View style={styles.detailCell}>
+                        <Text style={styles.detailLabel}>Stock value</Text>
+                        <Text style={styles.detailValue}>${(item.totalStock * item.costPerUnit).toFixed(2)}</Text>
+                      </View>
+                    )}
                   </View>
-                  <TouchableOpacity
+                  {canSeeOwnerData && <TouchableOpacity
                     testID={`check-stock-edit-${item.id}`}
                     style={styles.editButton}
                     onPress={() => onNavigate("edit", { itemId: item.id })}
                   >
                     <Text style={styles.editButtonText}>Edit this good</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity>}
                 </View>
               )}
             </View>
-            <View style={styles.alignEnd}>
+            {canSeeOwnerData && <View style={styles.alignEnd}>
               <Text style={styles.itemProfit}>+${item.profit.toFixed(2)}</Text>
               <Text style={styles.itemSub}>Profit so far</Text>
-            </View>
+            </View>}
           </Card>
         )}
       />

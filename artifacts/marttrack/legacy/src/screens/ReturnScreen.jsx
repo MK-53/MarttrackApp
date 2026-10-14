@@ -11,7 +11,7 @@ import { isWeightBasedUnit, validatePositive } from "../utils/validation";
 import { formatDate } from "../utils/dates";
 
 export default function ReturnScreen({ onNavigate }) {
-  const { state, dispatch } = useMartTrack();
+  const { state, dispatch, isDispatching } = useMartTrack();
   const [step, setStep] = useState("select");
   const [search, setSearch] = useState("");
   const [selectedSale, setSelectedSale] = useState(null);
@@ -38,7 +38,7 @@ export default function ReturnScreen({ onNavigate }) {
     : salesWithItems;
 
   useEffect(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || isDispatching) return;
     setSaving(false);
     if (state.lastActionError) {
       Alert.alert("Error", state.lastActionError);
@@ -47,7 +47,7 @@ export default function ReturnScreen({ onNavigate }) {
       onNavigate("summary");
     }
     setPendingAction(null);
-  }, [pendingAction, state.lastActionError, onNavigate]);
+  }, [pendingAction, state.lastActionError, isDispatching, onNavigate]);
 
   const handleConfirmReturn = async () => {
     if (saving) return;

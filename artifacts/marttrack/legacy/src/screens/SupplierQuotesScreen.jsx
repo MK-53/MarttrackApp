@@ -11,7 +11,7 @@ import Button from "../components/Button";
 import ScreenHeader from "../components/ScreenHeader";
 
 export default function SupplierQuotesScreen({ onNavigate }) {
-  const { state, colors, dispatch } = useMartTrack();
+  const { state, colors, dispatch, isDispatching } = useMartTrack();
   const [selectedItemId, setSelectedItemId] = useState(state.items[0]?.id ?? null);
   const [supplierName, setSupplierName] = useState("");
   const [quotedPrice, setQuotedPrice] = useState("");
@@ -23,7 +23,7 @@ export default function SupplierQuotesScreen({ onNavigate }) {
   const selectedItem = state.items.find(item => item.id === selectedItemId);
 
   useEffect(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || isDispatching) return;
     setSaving(false);
     if (state.lastActionError) {
       Alert.alert("Error", state.lastActionError);
@@ -34,7 +34,7 @@ export default function SupplierQuotesScreen({ onNavigate }) {
       Alert.alert("Saved", "Supplier quote added.");
     }
     setPendingAction(false);
-  }, [pendingAction, state.lastActionError]);
+  }, [pendingAction, state.lastActionError, isDispatching]);
 
   const handleSave = () => {
     if (saving) return;

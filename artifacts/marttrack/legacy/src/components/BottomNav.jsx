@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 ];
 
 export default function BottomNav({ activeScreen, onNavigate }) {
-  const { colors } = useTheme();
+  const { colors, isOwner, isConnected, activeStore } = useTheme();
   const floatAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -37,17 +37,30 @@ export default function BottomNav({ activeScreen, onNavigate }) {
     return screen;
   };
 
+  const navItems = isOwner
+    ? NAV_ITEMS
+    : NAV_ITEMS.filter(item => item.id !== "add");
   const activeId = mapScreen(activeScreen);
 
   return (
     <Animated.View style={[styles.wrapper, { backgroundColor: colors.card, borderColor: colors.border, transform: [{ translateY: floatAnim }] }]}>
-      {NAV_ITEMS.map(item => {
+      {navItems.map(item => {
         const isActive = item.id === activeId;
+        const networkDisabled =
+          activeStore?.location !== "device" &&
+          !isConnected &&
+          ["sell", "add"].includes(item.id);
         return (
           <TouchableOpacity
             key={item.id}
             onPress={() => onNavigate(item.id)}
-            style={[styles.iconBtn, isActive && { backgroundColor: `${colors.primary}22` }]}
+            disabled={networkDisabled}
+            accessibilityState={{ disabled: networkDisabled }}
+            style={[
+              styles.iconBtn,
+              isActive && { backgroundColor: `${colors.primary}22` },
+              networkDisabled && styles.disabled,
+            ]}
             activeOpacity={0.8}
           >
             <Text style={[styles.icon, { color: isActive ? colors.textHeader : colors.textMuted }]}>{item.icon}</Text>
@@ -80,4 +93,5 @@ const styles = StyleSheet.create({
   iconActive: { color: "rgba(255,255,255,0.95)" },
   label: { fontSize: 9, color: "rgba(255,255,255,0.4)", marginTop: 2 },
   labelActive: { color: COLORS.secondary },
+  disabled: { opacity: 0.35 },
 });

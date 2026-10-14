@@ -10,7 +10,7 @@ import ScreenHeader from "../components/ScreenHeader";
 import { isWeightBasedUnit, validateItemName, validatePositive } from "../utils/validation";
 
 export default function AddStockScreen({ onNavigate }) {
-  const { state, dispatch } = useMartTrack();
+  const { state, dispatch, isDispatching } = useMartTrack();
   const [form, setForm] = useState({
     addName: "", addTarget: "", addUnit: "",
     addTotalCost: "", addQty: "",
@@ -37,7 +37,7 @@ export default function AddStockScreen({ onNavigate }) {
   };
 
   useEffect(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || isDispatching) return;
     setSaving(false);
     if (state.lastActionError) {
       Alert.alert("Error", state.lastActionError);
@@ -46,7 +46,7 @@ export default function AddStockScreen({ onNavigate }) {
       onNavigate("summary");
     }
     setPendingAction(null);
-  }, [pendingAction, state.lastActionError, onNavigate]);
+  }, [pendingAction, state.lastActionError, isDispatching, onNavigate]);
 
   const handleAddStock = () => {
     if (saving) return;

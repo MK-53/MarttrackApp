@@ -53,12 +53,19 @@ export function martTrackReducer(state, action) {
         break;
 
       case "CLEAR_ACTION_ERROR":
-        nextState = state;
+        nextState = { ...state, lastActionError: null };
+        break;
+
+      case "SET_ACTION_ERROR":
+        nextState = { ...state, lastActionError: action.payload };
         break;
 
       default:
         nextState = state;
         break;
+    }
+    if (action.type === "SET_ACTION_ERROR" || action.type === "CLEAR_ACTION_ERROR") {
+      return nextState;
     }
     return { ...nextState, lastActionError: null };
   } catch (error) {

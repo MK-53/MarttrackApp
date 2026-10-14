@@ -15,10 +15,18 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.marttrack.app"
+      "bundleIdentifier": "com.marttrack.app",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "MartTrack connects to the store host on your shop's local Wi-Fi.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSAllowsArbitraryLoadsInLocalNetworking": true
+        }
+      }
     },
     "android": {
-      "package": "com.marttrack.app"
+      "package": "com.marttrack.app",
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/images/icon.png"
@@ -26,7 +34,21 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow MartTrack to scan a store invitation QR code."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

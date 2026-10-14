@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEY, SCHEMA_VERSION } from "../constants/config.js";
+import { getStoreDataKey } from "./stores.js";
 
 const defaultState = {
   schemaVersion: SCHEMA_VERSION,
@@ -16,8 +17,16 @@ const defaultState = {
 export const getDefaultState = () => ({ ...defaultState });
 
 export const loadData = async () => {
+  return loadFromKey(STORAGE_KEY);
+};
+
+export const loadDataForStore = async store => {
+  return loadFromKey(getStoreDataKey(store));
+};
+
+const loadFromKey = async key => {
   try {
-    const saved = await AsyncStorage.getItem(STORAGE_KEY);
+    const saved = await AsyncStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
       return migrateState(parsed);
@@ -32,6 +41,14 @@ export const loadData = async () => {
 export const saveData = async (data) => {
   try {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.warn("Save failed", error);
+  }
+};
+
+export const saveDataForStore = async (data, store) => {
+  try {
+    await AsyncStorage.setItem(getStoreDataKey(store), JSON.stringify(data));
   } catch (error) {
     console.warn("Save failed", error);
   }

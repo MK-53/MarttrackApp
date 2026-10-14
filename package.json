@@ -3,11 +3,12 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-
+    "preinstall": "node -e \"if(!/^pnpm\\//.test(process.env.npm_config_user_agent||'')){console.error('Use pnpm instead');process.exit(1)}\"",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "api:dev": "pnpm --filter @workspace/api-server run dev",
+    "api:store-smoke": "node artifacts/api-server/scripts/store-parallel-smoke.mjs",
     "app:dev": "pnpm --filter @workspace/marttrack run dev",
     "db:push": "pnpm --filter @workspace/db run push"
   },

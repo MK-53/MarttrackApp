@@ -12,7 +12,7 @@ import ScreenHeader from "../components/ScreenHeader";
 import { isWeightBasedUnit, validatePositive } from "../utils/validation";
 
 export default function SellScreen({ onNavigate }) {
-  const { state, dispatch } = useMartTrack();
+  const { state, dispatch, isOwner, isDispatching } = useMartTrack();
   const [step, setStep] = useState("select");
   const [search, setSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
@@ -36,7 +36,7 @@ export default function SellScreen({ onNavigate }) {
   };
 
   useEffect(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || isDispatching) return;
     setSaving(false);
     if (state.lastActionError) {
       Alert.alert("Error", state.lastActionError);
@@ -45,7 +45,7 @@ export default function SellScreen({ onNavigate }) {
       onNavigate("summary");
     }
     setPendingAction(null);
-  }, [pendingAction, state.lastActionError, onNavigate]);
+  }, [pendingAction, state.lastActionError, isDispatching, onNavigate]);
 
   const handlePreview = () => {
     const newErrors = {};
@@ -55,7 +55,23 @@ export default function SellScreen({ onNavigate }) {
     if (priceError) newErrors.sellPrice = priceError;
     if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
     try {
-      const result = previewSale(state, selectedItem.id, Number(sellQty), Number(sellPrice));
+      const quantity = Number(sellQty);
+      const price = Number(sellPrice);
+      let result;
+      if (isOwner) {
+        result = previewSale(state, selectedItem.id, quantity, price);
+      } else {
+        if (quantity > selectedItem.totalStock) {
+          throw new Error(`Not enough stock. Available: ${selectedItem.totalStock}`);
+        }
+        result = {
+          item: selectedItem,
+          quantity,
+          sellingPrice: price,
+          revenue: Number((quantity * price).toFixed(2)),
+          stockRemaining: selectedItem.totalStock - quantity,
+        };
+      }
       setPreview(result);
       setStep("review");
     } catch (error) {
@@ -74,7 +90,11 @@ export default function SellScreen({ onNavigate }) {
         sellingPrice: Number(sellPrice),
       },
     });
-    setPendingAction({ successMessage: `Sale recorded. Profit: $${preview.profit.toFixed(2)}` });
+    setPendingAction({
+      successMessage: isOwner
+        ? `Sale recorded. Profit: $${preview.profit.toFixed(2)}`
+        : "Sale recorded.",
+    });
   };
 
   if (step === "select") {
@@ -101,7 +121,11 @@ export default function SellScreen({ onNavigate }) {
     return (
       <ScrollView contentContainerStyle={styles.screenPad}>
         <ScreenHeader title={`Add details`} onBack={() => setStep("select")} />
-        <Text style={styles.stepIntro}>Tell us what happened so your stock and profit stay accurate.</Text>
+        <Text style={styles.stepIntro}>
+          {isOwner
+            ? "Tell us what happened so your stock and profit stay accurate."
+            : "Enter the quantity and selling price. The store host will update stock."}
+        </Text>
         <Card style={styles.p16}>
           <View style={{ marginBottom: 15 }}>
             <Text style={styles.label}>Still on the shelf</Text>
@@ -137,26 +161,34 @@ export default function SellScreen({ onNavigate }) {
           <Text style={styles.reviewItemName}>{preview.item.item_name}</Text>
           <Text style={styles.reviewQty}>{preview.quantity} {preview.item.sell_unit_type}</Text>
           <View style={styles.divider} />
-          <Text style={styles.sectionLabel}>How stock cost is worked out</Text>
-          {preview.fifoAllocation.map((alloc, i) => (
-            <View key={i} style={styles.fifoRow}>
-              <Text style={styles.fifoText}>Stock batch #{alloc.batchId}</Text>
-              <Text style={styles.fifoText}>{alloc.units} x ${alloc.costPerUnit} = ${alloc.cost}</Text>
-            </View>
-          ))}
-          <View style={styles.divider} />
+          {isOwner && (
+            <>
+              <Text style={styles.sectionLabel}>How stock cost is worked out</Text>
+              {preview.fifoAllocation.map((alloc, i) => (
+                <View key={i} style={styles.fifoRow}>
+                  <Text style={styles.fifoText}>Stock batch #{alloc.batchId}</Text>
+                  <Text style={styles.fifoText}>{alloc.units} x ${alloc.costPerUnit} = ${alloc.cost}</Text>
+                </View>
+              ))}
+              <View style={styles.divider} />
+            </>
+          )}
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Money in</Text>
+            <Text style={styles.summaryLabel}>{isOwner ? "Money in" : "Sale total"}</Text>
             <Text style={styles.summaryValue}>${preview.revenue.toFixed(2)}</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Stock cost</Text>
-            <Text style={styles.summaryValue}>${preview.cogs.toFixed(2)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: COLORS.secondary }]}>Your profit</Text>
-            <Text style={[styles.summaryValue, { color: COLORS.secondary }]}>${preview.profit.toFixed(2)}</Text>
-          </View>
+          {isOwner && (
+            <>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Stock cost</Text>
+                <Text style={styles.summaryValue}>${preview.cogs.toFixed(2)}</Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: COLORS.secondary }]}>Your profit</Text>
+                <Text style={[styles.summaryValue, { color: COLORS.secondary }]}>${preview.profit.toFixed(2)}</Text>
+              </View>
+            </>
+          )}
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Left in stock</Text>
             <Text style={styles.summaryValue}>{preview.stockRemaining} {preview.item.sell_unit_type}</Text>

@@ -6,7 +6,7 @@ import { getSummary } from "../domain/accounting";
 import Card from "../components/Card";
 
 export default function DashboardScreen({ onNavigate }) {
-  const { state, dispatch } = useMartTrack();
+  const { state, dispatch, isConnected, activeStore } = useMartTrack();
   const { colors, theme } = useTheme();
   const summary = getSummary(state);
   const firstName = "there";
@@ -119,6 +119,8 @@ export default function DashboardScreen({ onNavigate }) {
           <TouchableOpacity
             key={item.value}
             onPress={() => onNavigate(item.value)}
+            disabled={!isConnected && activeStore?.location !== "device" && ["sell", "add"].includes(item.value)}
+            accessibilityState={{ disabled: !isConnected && activeStore?.location !== "device" && ["sell", "add"].includes(item.value) }}
             style={[styles.menuBlock, { borderColor: item.color }]}
             activeOpacity={0.82}
           >

@@ -1,4 +1,13 @@
-import { jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 
 export const briefingsTable = pgTable("briefings", {
   id: serial("id").primaryKey(),
@@ -8,6 +17,33 @@ export const briefingsTable = pgTable("briefings", {
   requestSnapshot: jsonb("request_snapshot").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const storesTable = pgTable("stores", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  state: jsonb("state").$type<Record<string, unknown>>().notNull(),
+  version: integer("version").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const storeMembersTable = pgTable(
+  "store_members",
+  {
+    id: text("id").primaryKey(),
+    storeId: text("store_id")
+      .notNull()
+      .references(() => storesTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    role: text("role").$type<"owner" | "seller">().notNull(),
+    pinHash: text("pin_hash").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("store_members_store_id_idx").on(table.storeId),
+    uniqueIndex("store_members_token_hash_idx").on(table.tokenHash),
+  ],
+);
 
 // Export your models here. Add one export per file
 // export * from "./posts";
@@ -30,3 +66,5 @@ export const briefingsTable = pgTable("briefings", {
 
 export type Briefing = typeof briefingsTable.$inferSelect;
 export type InsertBriefing = typeof briefingsTable.$inferInsert;
+export type Store = typeof storesTable.$inferSelect;
+export type StoreMemberRecord = typeof storeMembersTable.$inferSelect;

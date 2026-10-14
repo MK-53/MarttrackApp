@@ -10,7 +10,7 @@ import ScreenHeader from "../components/ScreenHeader";
 import { validateItemName, validatePositive, validateRequired } from "../utils/validation";
 
 export default function EditItemScreen({ onNavigate, initialItemId = null }) {
-  const { state, dispatch } = useMartTrack();
+  const { state, dispatch, isDispatching } = useMartTrack();
   const [search, setSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [form, setForm] = useState({ editName: "", editTarget: "", editUnit: "", editReason: "" });
@@ -35,7 +35,7 @@ export default function EditItemScreen({ onNavigate, initialItemId = null }) {
   }, [initialItemId, state.items]);
 
   useEffect(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || isDispatching) return;
     setSaving(false);
     if (state.lastActionError) {
       Alert.alert("Error", state.lastActionError);
@@ -44,7 +44,7 @@ export default function EditItemScreen({ onNavigate, initialItemId = null }) {
       onNavigate("summary");
     }
     setPendingAction(null);
-  }, [pendingAction, state.lastActionError, onNavigate]);
+  }, [pendingAction, state.lastActionError, isDispatching, onNavigate]);
 
   const handleEdit = () => {
     if (saving) return;
